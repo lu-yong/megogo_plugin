@@ -1,0 +1,14 @@
+{
+ "type": "ecmascript",
+  "id": "megogo",
+  "file": "megogo.js",
+  "category": "tv",
+  "showtimeVersion": "0.0.1",
+  "version": "0.0.1",
+  "author": "Luyong",
+  "title": "Megogo",
+  "icon": "megogo.bmp",
+  "synopsis": "megogo for test",
+  "description":"<p>just for test megogo api.</p>",
+  "homepage":"https://github.com/lu-yong/megogo_plugin.git"
+}
