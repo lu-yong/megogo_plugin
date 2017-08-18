@@ -29,7 +29,6 @@ var megogo_vendor_key = "021f17b187";
                     continue;
                 }
                 if(categories[i].hasOwnProperty("title")){
-                    print(categories[i].title);
                     page.appendItem(PLUGIN_PREFIX + "category_id:" + categories[i].id, "directory", {title: categories[i].title});
                 }
             }
@@ -88,7 +87,16 @@ var megogo_vendor_key = "021f17b187";
             if("ok" === response.result){
                 video_list = response.data.video_list;
                 for(i = 0; i < video_list.length; i++){
-                    page.appendItem(PLUGIN_PREFIX + "video_id:" + video_list[i].id, "video", {title: video_list[i].title, icon: video_list[i].image.small, extra_data:"total static:" + total_item});
+                        var video_info = {
+                        video_id: video_list[i].id,
+                        icon_url: video_list[i].image.small,
+                        country: video_list[i].country,
+                        year: video_list[i].year,
+                        duration: video_list[i].duration,
+                        rating_imdb: video_list[i].rating_imdb,
+                    };
+                    page.appendItem(PLUGIN_PREFIX + "video_info:" + JSON.stringify(video_info), "directory",
+                        {title: video_list[i].title, icon: video_list[i].image.small, extra_data:"total:" + total_item});
                 }
             }
             else{
@@ -109,32 +117,55 @@ var megogo_vendor_key = "021f17b187";
 
         loader();
         page.paginator = loader;
-        //print("add video to item over");
 
     });
 
-    plugin.addURI(PLUGIN_PREFIX + "video_id:(.*)", function(page, video_id){
+    plugin.addURI(PLUGIN_PREFIX + "video_info:(.*)", function(page, video_info){
         var response;
-        var videoParams;
-        var url = "";
+        var bitrates;
+        var info;
+        var i = 0;
+        var description_str;
 
-        print("get play url");
-        response = get_video_stream_info_by_id(video_id);
-        print("play url:" + response.data.bitrates[0].src);
+        info = JSON.parse(video_info);
+        print("start getting play url form server");
+        response = get_video_stream_info_by_id(info.video_id);
+
         if("ok" === response.result){
             if("" !== response.data.src){
                 if(true === response.data.hasOwnProperty("bitrates")){
-                    url = response.data.bitrates[0].src;
+                    bitrates = response.data.bitrates;
+
+                    for(i = 0; i < bitrates.length; i++){
+                        hour =  Math.floor(info.duration / 3600);
+                        min =  Math.floor((info.duration % 3600) / 60);
+                        sec = info.duration % 60;
+                        duration_str = hour + ":" + min + ":" + sec;
+
+                        description_str = "Country: " + info.country + "\nYear: " + info.year +  "\nRating Imdb: " + info.rating_imdb + "\nDuration: " + duration_str;
+                        var metadata = {
+                            title: bitrates[i].name,
+                            description: description_str,
+                            year: info.year,
+                            duration: info.duration,
+                            icon: info.icon_url
+                        };
+                        page.appendItem(PLUGIN_PREFIX + "play_url:" + bitrates[i].src, "video", metadata);
+                    }
                 }
             }
-
-            videoParams = {
-                sources: [{
-                    url: url,
-                }],
-                no_subtitle_scan: true,
-                subtitles: []
+            else{
+                var metadata = {
+                    title: response.data.title,
+                    description: response.data.restrictions[0].message,
+                    year: info.year,
+                    duration: info.duration,
+                    icon: info.icon_url
+                };
+                var src = "";
+                page.appendItem(PLUGIN_PREFIX + "play_url:" + src, "video", metadata);
             }
+
         }
         else{
             print("!!!!!!!!!!!!!!!!!");
@@ -142,8 +173,22 @@ var megogo_vendor_key = "021f17b187";
             print("!!!!!!!!!!!!!!!!!");
         }
 
+    });
+
+    plugin.addURI(PLUGIN_PREFIX + "play_url:(.*)", function(page, play_url){
+        var videoParams;
+
+        videoParams = {
+            sources: [{
+                url: play_url,
+            }],
+            no_subtitle_scan: true,
+            subtitles: []
+        }
+
         page.source = 'videoparams:' + JSON.stringify(videoParams);
     });
+
 })(this);
 
 function handshake(url){
@@ -168,7 +213,7 @@ function get_category_video_list_by_id(category_id, number, offset){
     var param = "category_id=" + category_id + "limit=" + number + "offset=" + offset + "sort=popular" + megogo_vendor_key;
     sign_str = md5digest(param);
     url = "https://api.megogo.net/v1/video?category_id=" + category_id + "&limit=" + number + "&offset=" + offset + "&sort=popular&sign=" + sign_str + "_samsung_j7";
-    //print("final url:" + url);
+    print("the usl sent to server to get video list:" + url);
     response = handshake(url);
 
     return response;
@@ -184,7 +229,7 @@ function get_video_stream_info_by_id(video_id){
     param = "video_id=" + video_id + "resolution=1920x1080" + megogo_vendor_key;
     sign_str = md5digest(param);
     url = "https://api.megogo.net/v1/stream?video_id=" + video_id + "&resolution=1920x1080&sign=" + sign_str + "_samsung_j7";
-    //print("video stream url: " + url);
+    print("url sent to server to get video stream: " + url);
     response = handshake(url);
 
     return response;
