@@ -25,7 +25,7 @@ var megogo_vendor_key = "021f17b187";
             categories = getMegogoResponse.data.categories;
 
             for(i = 0; i < categories.length; i++){
-                if(20 == categories[i].id || 23 == categories[i].id){
+                if(20 === categories[i].id || 23 === categories[i].id){
                     continue;
                 }
                 if(categories[i].hasOwnProperty("title")){
@@ -90,11 +90,21 @@ var megogo_vendor_key = "021f17b187";
                         var video_info = {
                         video_id: video_list[i].id,
                         icon_url: video_list[i].image.small,
-                        country: video_list[i].country,
-                        year: video_list[i].year,
-                        duration: video_list[i].duration,
-                        rating_imdb: video_list[i].rating_imdb,
                     };
+
+                    if(true === video_list[i].hasOwnProperty('country')){
+                        video_info.country = video_list[i].country;
+                    }
+                    if(true === video_list[i].hasOwnProperty('year')){
+                        video_info.year = video_list[i].year;
+                    }
+                    if(true === video_list[i].hasOwnProperty('duration')){
+                        video_info.duration = video_list[i].duration;
+                    }
+                    if(true === video_list[i].hasOwnProperty('rating_imdb')){
+                        video_info.rating_imdb = video_list[i].rating_imdb;
+                    }
+
                     page.appendItem(PLUGIN_PREFIX + "video_info:" + JSON.stringify(video_info), "directory",
                         {title: video_list[i].title, icon: video_list[i].image.small, extra_data:"total:" + total_item});
                 }
@@ -125,7 +135,6 @@ var megogo_vendor_key = "021f17b187";
         var bitrates;
         var info;
         var i = 0;
-        var description_str;
 
         info = JSON.parse(video_info);
         print("start getting play url form server");
@@ -137,13 +146,30 @@ var megogo_vendor_key = "021f17b187";
                     bitrates = response.data.bitrates;
 
                     for(i = 0; i < bitrates.length; i++){
-                        hour =  Math.floor(info.duration / 3600);
-                        min =  Math.floor((info.duration % 3600) / 60);
-                        sec = info.duration % 60;
-                        duration_str = hour + ":" + min + ":" + sec;
+                        var description_str;
+                        var metadata;
 
-                        description_str = "Country: " + info.country + "\nYear: " + info.year +  "\nRating Imdb: " + info.rating_imdb + "\nDuration: " + duration_str;
-                        var metadata = {
+                        description_str = '';
+                        if(true === info.hasOwnProperty('country')){
+                            description_str += ("Country: " + info.country);
+                        }
+                        if(true === info.hasOwnProperty('year')){
+                            description_str += ("\nYear: " + info.year);
+                        }
+                        if(true === info.hasOwnProperty('rating_imdb')){
+                            if('' !== info.rating_imdb){
+                                description_str += ("\nRating Imdb: " + info.rating_imdb);
+                            }
+                        }
+                        if(true === info.hasOwnProperty('duration')){
+                            hour =  Math.floor(info.duration / 3600);
+                            min =  Math.floor((info.duration % 3600) / 60);
+                            sec = info.duration % 60;
+                            duration_str = hour + ":" + min + ":" + sec;
+                            description_str += ("\nDuration: " + duration_str);
+                        }
+
+                        metadata = {
                             title: bitrates[i].name,
                             description: description_str,
                             year: info.year,
