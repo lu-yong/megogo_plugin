@@ -70,7 +70,7 @@ var megogo_vendor_key = "021f17b187";
             var number = 0;
 
             if(offset > total_item - 1){
-                return;
+                return false;
             }
 
             if(offset + offset_static_value > total_item){
@@ -113,7 +113,7 @@ var megogo_vendor_key = "021f17b187";
                 print("!!!!!!!!!!!!!!!!!");
                 print(response.result + ": " + response.code + response.message);
                 print("!!!!!!!!!!!!!!!!!");
-                return;
+                return false;
             }
 
 
@@ -123,6 +123,7 @@ var megogo_vendor_key = "021f17b187";
             }
             print("offset:" + offset + "page.entries:"+page.entries);
             print("loader finish");
+            return true;
         }
 
         loader();
