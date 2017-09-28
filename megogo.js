@@ -80,9 +80,9 @@ var megogo_vendor_key = "021f17b187";
                 number = offset_static_value;
             }
 
-            print("start getting from server, number: " + number + "offset: " + offset);
+            //print("start getting from server, number: " + number + "offset: " + offset);
             response = get_category_video_list_by_id(category_id, number, offset);
-            print("get over from server");
+            //print("get over from server");
 
             if("ok" === response.result){
                 video_list = response.data.video_list;
@@ -121,8 +121,8 @@ var megogo_vendor_key = "021f17b187";
             if(offset > total_item){
                 offset = total_item;
             }
-            print("offset:" + offset + "page.entries:"+page.entries);
-            print("loader finish");
+            //print("offset:" + offset + "page.entries:"+page.entries);
+            //print("loader finish");
             return true;
         }
 
@@ -138,7 +138,7 @@ var megogo_vendor_key = "021f17b187";
         var i = 0;
 
         info = JSON.parse(video_info);
-        print("start getting play url form server");
+        //print("start getting play url form server");
         response = get_video_stream_info_by_id(info.video_id);
 
         if("ok" === response.result){
@@ -240,7 +240,7 @@ function get_category_video_list_by_id(category_id, number, offset){
     var param = "category_id=" + category_id + "limit=" + number + "offset=" + offset + "sort=popular" + megogo_vendor_key;
     sign_str = md5digest(param);
     url = "https://api.megogo.net/v1/video?category_id=" + category_id + "&limit=" + number + "&offset=" + offset + "&sort=popular&sign=" + sign_str + "_samsung_j7";
-    print("the usl sent to server to get video list:" + url);
+    //print("the usl sent to server to get video list:" + url);
     response = handshake(url);
 
     return response;
@@ -256,7 +256,7 @@ function get_video_stream_info_by_id(video_id){
     param = "video_id=" + video_id + "resolution=1920x1080" + megogo_vendor_key;
     sign_str = md5digest(param);
     url = "https://api.megogo.net/v1/stream?video_id=" + video_id + "&resolution=1920x1080&sign=" + sign_str + "_samsung_j7";
-    print("url sent to server to get video stream: " + url);
+    //print("url sent to server to get video stream: " + url);
     response = handshake(url);
 
     return response;
