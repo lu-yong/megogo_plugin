@@ -183,7 +183,7 @@ var megogo_vendor_key = "021f17b187";
             }
             else{
                 var metadata = {
-                    title: response.data.title,
+                    title: "No Contents",
                     description: response.data.restrictions[0].message,
                     year: info.year,
                     duration: info.duration,
