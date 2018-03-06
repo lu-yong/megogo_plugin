@@ -17,7 +17,7 @@ var megogo_vendor_key = "021f17b187";
 
         page.type = "directroy";
 
-        showtime.trace("!!Get Megogo categories list:" + MEGOGO_URL);
+        showtime.trace("!!Get Megogo categories list");
         getMegogoResponse = handshake(MEGOGO_URL);
         showtime.trace("!!Parse Megogo list ok");
 
