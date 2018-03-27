@@ -294,7 +294,8 @@ function get_search_by_query_str(query){
     var sign_str;
     var response;
 
-    var param = "text=" + query + "offset=0limit=8" + megogo_vendor_key;
+    query = encodeURIComponent(query);
+    var param = "text=" + decodeURIComponent(query) + "offset=0limit=8" + megogo_vendor_key;
     sign_str = md5digest(param);
     url = "https://api.megogo.net/v1/search?text=" + query + "&offset=0&limit=8&sign=" + sign_str + "_samsung_j7";
     //print("!!!!!!!!!url: " + url + "!!!!!!!!!!!!");
