@@ -44,13 +44,16 @@ var megogo_vendor_key = "021f17b187";
     plugin.addURI(PLUGIN_PREFIX + "search:(.*)", function(page, query) {
         var response;
         var video_list;
+        var offset = 0;
+        var offset_static_value = 50;
+        var total_item = 0;
 
      	print('Search results for: ' + query);
         // 去掉转义字符
         query = query.replace(/[\'\"\\\/\b\f\n\r\t]/g, '');
         // 去掉特殊字符
         query = query.replace(/[\@\#\$\%\^\&\*\{\}\:\"\<\>\?\[\]\(\)]/g, '');
-        response = get_search_by_query_str(query);
+        response = get_search_by_query_str(query, 1, 0);
         if("ok" === response.result){
             if(response.data.hasOwnProperty("total")){
                 total_item = response.data.total;
@@ -61,29 +64,64 @@ var megogo_vendor_key = "021f17b187";
                 return;
             }
 
-            video_list = response.data.video_list;
-            for(i = 0; i < video_list.length; i++){
-                var video_info = {
-                    video_id: video_list[i].id,
-                    icon_url: video_list[i].image.small,
-                };
+            function loader(){
+                var number = 0;
 
-                if(true === video_list[i].hasOwnProperty('country')){
-                    video_info.country = video_list[i].country;
-                }
-                if(true === video_list[i].hasOwnProperty('year')){
-                    video_info.year = video_list[i].year;
-                }
-                if(true === video_list[i].hasOwnProperty('duration')){
-                    video_info.duration = video_list[i].duration;
-                }
-                if(true === video_list[i].hasOwnProperty('rating_imdb')){
-                    video_info.rating_imdb = video_list[i].rating_imdb;
+                if(offset > total_item - 1){
+                    return false;
                 }
 
-                page.appendItem(PLUGIN_PREFIX + "video_info:" + JSON.stringify(video_info), "directory",
-                    {title: video_list[i].title, icon: video_list[i].image.small, extra_data:"total:" + total_item});
+                if(offset + offset_static_value > total_item){
+                    number = total_item - offset;
+                }
+                else{
+                    number = offset_static_value;
+                }
+
+                response = get_search_by_query_str(query, number, offset);
+                if("ok" === response.result){
+                    video_list = response.data.video_list;
+                    for(i = 0; i < video_list.length; i++){
+                        var video_info = {
+                            video_id: video_list[i].id,
+                            icon_url: video_list[i].image.small,
+                        };
+
+                        if(true === video_list[i].hasOwnProperty('country')){
+                            video_info.country = video_list[i].country;
+                        }
+                        if(true === video_list[i].hasOwnProperty('year')){
+                            video_info.year = video_list[i].year;
+                        }
+                        if(true === video_list[i].hasOwnProperty('duration')){
+                            video_info.duration = video_list[i].duration;
+                        }
+                        if(true === video_list[i].hasOwnProperty('rating_imdb')){
+                            video_info.rating_imdb = video_list[i].rating_imdb;
+                        }
+
+                        page.appendItem(PLUGIN_PREFIX + "video_info:" + JSON.stringify(video_info), "directory",
+                            {title: video_list[i].title, icon: video_list[i].image.small, extra_data:"total:" + total_item});
+                    }
+                }
+                else{
+                    print("!!!!!!!!!!!!!!!!!");
+                    print(response.result + ": " + response.code + response.message);
+                    print("!!!!!!!!!!!!!!!!!");
+                    return false;
+                }
+
+                offset += offset_static_value;
+                if(offset > total_item){
+                    offset = total_item;
+                }
+                //print("offset:" + offset + "page.entries:"+page.entries);
+                //print("loader finish");
+                return true;
             }
+
+            loader();
+            page.paginator = loader;
         }
         else{
             print("!!!!!!!!!!!!!!!!!");
@@ -289,15 +327,15 @@ function handshake(url){
     return JSON.parse(responseText);
 }
 
-function get_search_by_query_str(query){
+function get_search_by_query_str(query, number, offset){
     var url;
     var sign_str;
     var response;
 
     query = encodeURIComponent(query);
-    var param = "text=" + decodeURIComponent(query) + "offset=0limit=8" + megogo_vendor_key;
+    var param = "text=" + decodeURIComponent(query) + "offset="+ offset + "limit=" + number + megogo_vendor_key;
     sign_str = md5digest(param);
-    url = "https://api.megogo.net/v1/search?text=" + query + "&offset=0&limit=8&sign=" + sign_str + "_samsung_j7";
+    url = "https://api.megogo.net/v1/search?text=" + query + "&offset=" + offset + "&limit=" + number + "&sign=" + sign_str + "_samsung_j7";
     //print("!!!!!!!!!url: " + url + "!!!!!!!!!!!!");
     response = handshake(url);
 
