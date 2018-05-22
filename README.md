@@ -1,2 +1,2 @@
 # megogo_plugin
-a plugin is running on gx
+a plugin is running on gx system
