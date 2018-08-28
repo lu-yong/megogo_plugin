@@ -60,7 +60,7 @@ var megogo_vendor_key = "021f17b187";
             }
 
             if(0 === total_item){
-                page.appendItem(PLUGIN_PREFIX + 'playcmd:null', 'video',{title: "No Content"});
+                page.appendItem(PLUGIN_PREFIX + 'play_url:null', 'video',{title: "No Content"});
                 return;
             }
 
